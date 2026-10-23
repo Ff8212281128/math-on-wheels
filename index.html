@@ -22,7 +22,7 @@
     z-index:100; color: var(--gold); box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   }
 
-  /* Sections (ساختار صفحات پشت سر هم) */
+  /* Sections */
   .section { 
     width:100%; max-width:860px; background:var(--panel); 
     border-radius:18px; padding:16px; box-shadow:0 10px 30px #0006;
@@ -45,7 +45,7 @@
   @keyframes fadeInWord { to { opacity: 1; } }
 
   /* Math Expression */
-  .expr{ text-align:center; font-size:24px; font-weight:800; margin:10px 0 16px; direction:ltr; display:flex; justify-content:center; align-items:center; gap:8px;}
+  .expr{ text-align:center; font-size:24px; font-weight:800; margin:10px 0 16px; direction:ltr; display:flex; justify-content:center; align-items:center; gap:8px; min-height: 40px;}
   .expr .p{color:var(--pos)} .expr .n{color:var(--neg)}
   .fraction { display: inline-flex; flex-direction: column; align-items: center; font-size: 0.8em; line-height: 1.2; }
   .fraction span:first-child { border-bottom: 2px solid white; padding-bottom: 2px; margin-bottom: 2px; }
@@ -55,7 +55,7 @@
   select { padding:8px; border-radius:8px; font-family:inherit; font-size:14px; background:#0f172a; color:white; border:1px solid #475569; outline:none;}
 
   /* Stage & Axis */
-  .stage{ position:relative; height:280px; background:#0b1220; border-radius:14px; overflow:hidden; border:1px solid #334155; }
+  .stage{ position:relative; height:280px; background:#0b1220; border-radius:14px; overflow:hidden; border:1px solid #334155; width:100%; }
   .axis{ position:absolute; top:70%; left:0; right:0; height:2px; background:#475569; }
   .axis::after{ content:""; position:absolute; top:-5px; right:-2px; border:6px solid transparent; border-left-color:#475569; }
   .tick{ position:absolute; top:70%; width:2px; height:10px; background:#334155; transform:translateY(-50%); }
@@ -84,8 +84,7 @@
   .feedback{ text-align:center; margin-top:10px; min-height:26px; font-weight:700; font-size:15px; color:var(--muted); }
   .feedback.ok{color:var(--pos)} .feedback.bad{color:var(--neg)}
   .step-box{ text-align:center; font-size:14px; margin-top:8px; min-height:22px; color:#cbd5e1; font-weight: bold; }
-  hr{border-color:#334155; margin:16px 0}
-
+  
   /* Quiz Panel */
   .quiz{ background:#0b1220; border:1px solid #334155; border-radius:14px; padding:14px; margin-top:14px; }
   .quiz-step{ text-align:center; font-size:14px; font-weight:700; margin-bottom:10px; color:var(--gold); min-height:20px; }
@@ -111,7 +110,7 @@
 <body>
 
 <div class="score">⭐ امتیاز: <span id="score">0</span></div>
-<h1>🦽 آموزش جامع اعداد صحیح با آدمک ویلچری</h1>
+<h1>🦽 آموزش جامع اعداد صحیح با آدمک ویلچری (نسخه نهایی)</h1>
 
 <!-- تعریف SVG به صورت مخفی اما رندرپذیر -->
 <svg width="0" height="0" style="position:absolute;">
@@ -287,16 +286,20 @@ function drawFootprint(stageId, percent, color) {
   stage.appendChild(fp);
 }
 
-// رسم بردار
+// رسم بردار (اصلاح شده برای موبایل)
 function drawVector(layerId, stageId, x1Percent, x2Percent, color, isSmall=false) {
   const stage = document.getElementById(stageId);
   const layer = document.getElementById(layerId);
-  const rect = stage.getBoundingClientRect();
-  const y = rect.height * 0.70;
+  if(!stage || !layer) return;
+  
+  const w = stage.clientWidth || stage.offsetWidth;
+  const h = stage.clientHeight || stage.offsetHeight;
+  const y = h * 0.70;
+
   const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  line.setAttribute('x1', rect.width * (x1Percent / 100));
+  line.setAttribute('x1', w * (x1Percent / 100));
   line.setAttribute('y1', y);
-  line.setAttribute('x2', rect.width * (x2Percent / 100));
+  line.setAttribute('x2', w * (x2Percent / 100));
   line.setAttribute('y2', y);
   line.setAttribute('stroke', color);
   line.setAttribute('stroke-width', isSmall ? '2' : '4');
@@ -306,7 +309,7 @@ function drawVector(layerId, stageId, x1Percent, x2Percent, color, isSmall=false
 
 function clearVectors(layerId) {
   const layer = document.getElementById(layerId);
-  layer.innerHTML = '';
+  if(layer) layer.innerHTML = '';
 }
 
 /* =====================================================
@@ -546,7 +549,7 @@ function ansAddDir(idx, c){ const d = quizAddState.data; if(c === (idx===0?(d.a>
 function ansAddCount(idx){ const d = quizAddState.data; if(parseInt(document.getElementById('qinAdd').value) === (idx===0?Math.abs(d.a):Math.abs(d.b))){ document.getElementById('qfbAdd').textContent='✅'; document.getElementById('qfbAdd').className='quiz-fb ok'; quizAddState.step++; setTimeout(renderAddQuiz, 700); } else { document.getElementById('qfbAdd').textContent='❌'; document.getElementById('qfbAdd').className='quiz-fb bad'; } }
 
 /* =====================================================
-   تقسیم (بخش ۷) - کاملاً اصلاح شده
+   تقسیم (بخش ۷) - نسخه پایدار
    ===================================================== */
 let currentDiv = { a:6, b:2 };
 function changeEqDiv(val){
@@ -716,7 +719,6 @@ function ansDivResult(){
    مقداردهی اولیه در هنگام لود صفحه
    ===================================================== */
 window.onload = function() {
-  // تایپ متن‌ها
   typeText('type1', "در ضرب اعداد صحیح، علامت عدد اول جهت صورت را تعیین می‌کند و علامت عدد دوم جهت حرکت به جلو یا عقب را. سپس به تعداد عدد اول، دسته‌های حرکت انجام می‌شود.");
   typeText('type2', "در ضرب اعداد صحیح، علامت عدد اول جهت صورت را تعیین می‌کند و علامت عدد دوم جهت حرکت به جلو یا عقب را. سپس به تعداد عدد اول، دسته‌های حرکت انجام می‌شود.");
   typeText('type3', "در ضرب اعداد صحیح، علامت عدد اول جهت صورت را تعیین می‌کند و علامت عدد دوم جهت حرکت به جلو یا عقب را. سپس به تعداد عدد اول، دسته‌های حرکت انجام می‌شود.");
@@ -725,7 +727,6 @@ window.onload = function() {
   typeText('type6', "در جمع اعداد صحیح باید در آخر، هر عدد با یک علامت باشد و علامت + بین اعداد یعنی، پشت سر هم برای تفریق هم کافیست عبارت به جمع تبدیل شود.");
   typeText('type7', "در تقسیم، اگر عدد اول بر عدد دوم بخش‌پذیر باشد، پیکان عدد اول (آبی) و پیکان عدد دوم (سبز) را رسم می‌کنیم. اگر بخش‌پذیر نباشد، تقسیم را به ضرب در معکوس تبدیل می‌کنیم.");
 
-  // مقداردهی اولیه ضرب‌ها
   [1,2,3,4].forEach(n => {
     document.getElementById('human'+n).innerHTML = wheelchairSVG(1);
     renderTicks('stage'+n, 1);
@@ -733,18 +734,15 @@ window.onload = function() {
     document.getElementById('play'+n).addEventListener('click', function() { setTimeout(() => { if(!running[n]) startMulQuiz(n); }, 100); });
   });
 
-  // مقداردهی اولیه حدس ضرب
   document.getElementById('human5').innerHTML = wheelchairSVG(1);
   renderTicks('stage5', 1);
   placeHuman('human5', 50, false);
 
-  // مقداردهی اولیه جمع
   document.getElementById('humanAdd').innerHTML = wheelchairSVG(1);
   renderTicks('stageAdd', 1);
   placeHuman('humanAdd', 50, false);
   changeEqAdd('1');
 
-  // مقداردهی اولیه تقسیم
   document.getElementById('humanDiv').innerHTML = wheelchairSVG(1);
   renderTicks('stageDiv', 2);
   placeHuman('humanDiv', 50, false);
@@ -752,4 +750,4 @@ window.onload = function() {
 };
 </script>
 </body>
-  </html>
+</html>
