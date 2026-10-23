@@ -22,7 +22,7 @@
     z-index:100; color: var(--gold); box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   }
 
-  /* Sections */
+  /* Sections (بخش‌های پشت سر هم) */
   .section { 
     width:100%; max-width:860px; background:var(--panel); 
     border-radius:18px; padding:16px; box-shadow:0 10px 30px #0006;
@@ -661,10 +661,9 @@ async function runDivDemo(){
       }
       await sleep(500);
 
-      document.getElementById('stepDiv').textContent = `③ رسم پیکان ادغام شده (با حفظ پیکان‌های کوچک)`; 
-      // بدون دستور پاک کردن، فقط پیکان ادغام شده را رسم می‌کنیم
-      drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, cx, '#22c55e'); 
-      await sleep(1500);
+      document.getElementById('stepDiv').textContent = `③ بررسی تعداد پیکان‌ها و جهت نهایی`; 
+      // پیکان‌ها پاک نمی‌شوند تا کاربر تعدادشان را ببیند
+      await sleep(2000);
       
       const finalSign = finalDir === 1 ? '' : '-'; 
       const absRes = Math.abs(a / b);
@@ -772,4 +771,4 @@ window.onload = function() {
 };
 </script>
 </body>
-  </html>
+                                        </html>
