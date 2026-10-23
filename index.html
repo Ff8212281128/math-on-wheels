@@ -1,257 +1,598 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نمایش سه‌بعدی ریشه‌های مختلط</title>
-    <style>
-        body { margin: 0; overflow: hidden; font-family: Tahoma, sans-serif; background-color: #111; }
-        #info {
-            position: absolute; top: 10px; left: 10px; color: white;
-            background: rgba(0,0,0,0.8); padding: 12px; border-radius: 8px;
-            pointer-events: none; max-width: 220px; direction: rtl; border-right: 3px solid #f0ad4e;
-            font-size: 0.8em; line-height: 1.6; z-index: 100;
-        }
-        #info h1 { margin: 0 0 5px 0; font-size: 1em; color: #f0ad4e; }
-        #status {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.8); color: #5cb85c;
-            padding: 8px 12px; border-radius: 8px; font-size: 0.8em; direction: rtl; z-index: 100;
-        }
-        #controls {
-            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); padding: 8px 15px; border-radius: 25px;
-            display: flex; gap: 10px; color: white; font-size: 0.75em;
-            border: 1px solid #444; flex-wrap: wrap; justify-content: center; z-index: 100;
-        }
-        #controls label { display: flex; align-items: center; gap: 5px; }
-        #controls input { width: 60px; }
-    </style>
+<meta charset="UTF-8">
+<title>آموزش جامع اعداد صحیح با آدمک ویلچری</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --ink:#e2e8f0; --muted:#94a3b8;
+    --pos:#22c55e; --neg:#ef4444; --accent:#38bdf8; --gold:#fbbf24;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Vazirmatn,Tahoma,sans-serif; background:var(--bg);
+    color:var(--ink); min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; padding:14px; gap:12px;
+  }
+  h1{font-size:18px; margin:0; color:var(--accent); text-align:center;}
+  .score{ position:fixed; top:10px; left:10px; background:#1e293b; padding:6px 12px; border-radius:10px; font-size:13px; border:1px solid #334155; z-index:100; }
+  
+  /* Tabs */
+  .nav{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-bottom:10px; width:100%; max-width:860px;}
+  .nav button{ background:#1e40af; color:#dbeafe; padding:8px 12px; font-size:13px; border:none; border-radius:8px; cursor:pointer; font-family:inherit; transition: 0.2s;}
+  .nav button.active{background:var(--accent); color:#042f2e; font-weight:bold;}
+
+  /* Pages */
+  .page{ display:none; width:100%; max-width:860px; background:var(--panel); border-radius:18px; padding:16px; box-shadow:0 10px 30px #0006; }
+  .page.active{display:block}
+
+  /* Typing Box */
+  .typing-box { width: 100%; background: #0b1220; border: 1px solid #334155; border-radius: 12px; padding: 12px; font-size: 14px; line-height: 1.8; color: var(--gold); text-align: center; min-height: 60px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 15px; }
+  .typing-box span { opacity: 0; animation: fadeInWord 0.3s forwards; font-weight: bold; }
+  @keyframes fadeInWord { to { opacity: 1; } }
+
+  /* Math Expression */
+  .expr{ text-align:center; font-size:24px; font-weight:800; margin:10px 0 16px; direction:ltr; display:flex; justify-content:center; align-items:center; gap:8px;}
+  .expr .p{color:var(--pos)} .expr .n{color:var(--neg)}
+  .fraction { display: inline-flex; flex-direction: column; align-items: center; font-size: 0.8em; line-height: 1.2; }
+  .fraction span:first-child { border-bottom: 2px solid white; padding-bottom: 2px; margin-bottom: 2px; }
+
+  /* Select Menu */
+  .select-box { text-align:center; margin-bottom:10px; }
+  select { padding:8px; border-radius:8px; font-family:inherit; font-size:14px; background:#0f172a; color:white; border:1px solid #475569; outline:none;}
+
+  /* Stage & Axis */
+  .stage{ position:relative; height:280px; background:#0b1220; border-radius:14px; overflow:hidden; border:1px solid #334155; }
+  .axis{ position:absolute; top:70%; left:0; right:0; height:2px; background:#475569; }
+  .axis::after{ content:""; position:absolute; top:-5px; right:-2px; border:6px solid transparent; border-left-color:#475569; }
+  .tick{ position:absolute; top:70%; width:2px; height:10px; background:#334155; transform:translateY(-50%); }
+  .tick.minor { height: 5px; opacity: 0.6; }
+  .tick span{ position:absolute; top:14px; left:50%; transform:translateX(-50%); font-size:11px; font-weight:bold; color:var(--muted); }
+  .origin{ position:absolute; top:70%; left:50%; width:10px; height:10px; background:var(--accent); border-radius:50%; transform:translate(-50%,-50%); box-shadow:0 0 12px var(--accent); z-index:10;}
+
+  /* Wheelchair Human */
+  .human{ position:absolute; top:70%; left:50%; width:110px; height:130px; transform:translate(-50%,-100%); transition:left .6s cubic-bezier(.5,.05,.3,1); z-index:5; }
+  .human svg{width:100%; height:100%; display:block; overflow:visible}
+
+  /* Footprints */
+  .footprint{ position:absolute; top:70%; width:14px; height:6px; border-radius:50%; transform:translate(-50%,-50%); opacity:0; z-index:2; transition:opacity .2s;}
+  .footprint.show{opacity:.9;}
+
+  /* Vectors */
+  .vector-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
+
+  /* Buttons & Feedback */
+  .controls{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:12px; }
+  button{ font-family:inherit; cursor:pointer; border:none; border-radius:10px; padding:10px 14px; font-size:14px; font-weight:700; background:#334155; color:var(--ink); transition:.2s; }
+  button:hover{background:#475569}
+  button.go{background:var(--accent); color:#042f2e}
+  button:disabled{opacity:.5; cursor:not-allowed}
+
+  .feedback{ text-align:center; margin-top:10px; min-height:26px; font-weight:700; font-size:15px; color:var(--muted); }
+  .feedback.ok{color:var(--pos)} .feedback.bad{color:var(--neg)}
+  .step-box{ text-align:center; font-size:14px; margin-top:8px; min-height:22px; color:#cbd5e1; font-weight: bold; }
+  hr{border-color:#334155; margin:16px 0}
+
+  /* Quiz Panel */
+  .quiz{ background:#0b1220; border:1px solid #334155; border-radius:14px; padding:14px; margin-top:14px; }
+  .quiz-step{ text-align:center; font-size:14px; font-weight:700; margin-bottom:10px; color:var(--gold); min-height:20px; }
+  .quiz-q{ text-align:center; font-size:15px; margin-bottom:10px; color:var(--ink); }
+  .quiz-input{ display:block; margin:0 auto; width:120px; padding:10px; font-family:inherit; font-size:18px; font-weight:800; text-align:center; border-radius:10px; border:2px solid #475569; background:#1e293b; color:var(--ink); }
+  .quiz-input:focus{outline:none; border-color:var(--accent)}
+  .quiz-row{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px}
+  .quiz-fb{text-align:center; margin-top:10px; min-height:22px; font-weight:700; font-size:14px}
+  .quiz-fb.ok{color:var(--pos)} .quiz-fb.bad{color:var(--neg)}
+  .hidden{display:none !important}
+
+  /* Guess Options */
+  .guess-options { display: flex; gap:10px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
+  .guess-btn { background: #1e293b; border: 2px solid #475569; padding: 12px 20px; font-size: 18px; font-weight: bold; color: var(--ink); border-radius: 10px; direction: ltr; min-width: 110px; }
+  .guess-btn:hover { border-color: var(--accent); }
+  .guess-btn.correct { background: #14532d; border-color: var(--pos); }
+  .guess-btn.wrong { background: #7f1d1d; border-color: var(--neg); }
+
+  @keyframes shake{ 0%,100%{transform:translate(-50%,-100%)} 25%{transform:translate(calc(-50% + 5px),-100%)} 75%{transform:translate(calc(-50% - 5px),-100%)} }
+  .shake{animation:shake .4s}
+</style>
 </head>
 <body>
-    <div id="info">
-        <h1>ریشه‌های مختلط</h1>
-        <p>با انگشت بچرخانید</p>
-        <p style="color:#0056b3;">■ سهمی (کج شده)</p>
-        <p style="color:#d9534f;">■ ریشه‌های حقیقی (قرمز پررنگ)</p>
-        <p style="color:#ff8888;">■ جای خالی ریشه‌ها روی محور X (کم‌رنگ)</p>
-        <p style="color:#f0ad4e;">■ ریشه‌های مختلط (شناور در بعد Z)</p>
-        <p style="color:#5cb85c;">■ محور تقارن</p>
-    </div>
+
+<div class="score">⭐ امتیاز: <span id="score">0</span></div>
+<h1>🦽 آموزش جامع اعداد صحیح با آدمک ویلچری</h1>
+
+<div class="nav" id="nav">
+  <button class="active" onclick="showPage(1)">(+)×(+)</button>
+  <button onclick="showPage(2)">(+)×(-)</button>
+  <button onclick="showPage(3)">(-)×(+)</button>
+  <button onclick="showPage(4)">(-)×(-)</button>
+  <button onclick="showPage(5)">🎯 حدس ضرب</button>
+  <button onclick="showPage(6)">➕ جمع</button>
+  <button onclick="showPage(7)">➗ تقسیم</button>
+</div>
+
+<!-- SVG Markers Definition (Hidden) -->
+<svg style="display:none;">
+  <defs>
+    <marker id="arrow-blue" markerWidth="5" markerHeight="4" refX="4" refY="2" orient="auto"><polygon points="0 0, 5 2, 0 4" fill="#38bdf8" /></marker>
+    <marker id="arrow-green" markerWidth="5" markerHeight="4" refX="4" refY="2" orient="auto"><polygon points="0 0, 5 2, 0 4" fill="#22c55e" /></marker>
+    <marker id="arrow-gold" markerWidth="5" markerHeight="4" refX="4" refY="2" orient="auto"><polygon points="0 0, 5 2, 0 4" fill="#fbbf24" /></marker>
+  </defs>
+</svg>
+
+<!-- PAGE 1-4: ضرب -->
+<div class="page active" id="page1"><div class="typing-box" id="type1"></div><div class="expr" id="expr1"><span class="p">(+2)</span> × <span class="p">(+3)</span> = ?</div><div class="stage" id="stage1"><div class="axis"></div><div class="origin"></div><div class="human" id="human1"></div></div><div class="step-box" id="step1">برای دیدن حرکت، دکمه «نمایش» را بزن</div><div class="controls"><button class="go" id="play1" onclick="runMulDemo(1)">▶ نمایش حرکت</button><button onclick="resetMul(1)">↺ ریست</button></div><div class="feedback" id="fb1"></div><div class="quiz hidden" id="quiz1"><div class="quiz-step" id="qs1"></div><div class="quiz-q" id="qq1"></div><div id="qbody1"></div><div class="quiz-fb" id="qfb1"></div></div></div>
+
+<div class="page" id="page2"><div class="typing-box" id="type2"></div><div class="expr" id="expr2"><span class="p">(+2)</span> × <span class="n">(-3)</span> = ?</div><div class="stage" id="stage2"><div class="axis"></div><div class="origin"></div><div class="human" id="human2"></div></div><div class="step-box" id="step2">برای دیدن حرکت، دکمه «نمایش» را بزن</div><div class="controls"><button class="go" id="play2" onclick="runMulDemo(2)">▶ نمایش حرکت</button><button onclick="resetMul(2)">↺ ریست</button></div><div class="feedback" id="fb2"></div><div class="quiz hidden" id="quiz2"><div class="quiz-step" id="qs2"></div><div class="quiz-q" id="qq2"></div><div id="qbody2"></div><div class="quiz-fb" id="qfb2"></div></div></div>
+
+<div class="page" id="page3"><div class="typing-box" id="type3"></div><div class="expr" id="expr3"><span class="n">(-2)</span> × <span class="p">(+3)</span> = ?</div><div class="stage" id="stage3"><div class="axis"></div><div class="origin"></div><div class="human" id="human3"></div></div><div class="step-box" id="step3">برای دیدن حرکت، دکمه «نمایش» را بزن</div><div class="controls"><button class="go" id="play3" onclick="runMulDemo(3)">▶ نمایش حرکت</button><button onclick="resetMul(3)">↺ ریست</button></div><div class="feedback" id="fb3"></div><div class="quiz hidden" id="quiz3"><div class="quiz-step" id="qs3"></div><div class="quiz-q" id="qq3"></div><div id="qbody3"></div><div class="quiz-fb" id="qfb3"></div></div></div>
+
+<div class="page" id="page4"><div class="typing-box" id="type4"></div><div class="expr" id="expr4"><span class="n">(-2)</span> × <span class="n">(-3)</span> = ?</div><div class="stage" id="stage4"><div class="axis"></div><div class="origin"></div><div class="human" id="human4"></div></div><div class="step-box" id="step4">برای دیدن حرکت، دکمه «نمایش» را بزن</div><div class="controls"><button class="go" id="play4" onclick="runMulDemo(4)">▶ نمایش حرکت</button><button onclick="resetMul(4)">↺ ریست</button></div><div class="feedback" id="fb4"></div><div class="quiz hidden" id="quiz4"><div class="quiz-step" id="qs4"></div><div class="quiz-q" id="qq4"></div><div id="qbody4"></div><div class="quiz-fb" id="qfb4"></div></div></div>
+
+<!-- PAGE 5: حدس ضرب -->
+<div class="page" id="page5"><div class="typing-box" id="type5"></div><div class="expr">تمرین حدس حرکت</div><div class="stage" id="stage5"><div class="axis"></div><div class="origin"></div><div class="human" id="human5"></div></div><div class="step-box" id="step5" style="color:var(--gold);">در حال آماده‌سازی...</div><div class="guess-options" id="guessOptions"></div><div class="quiz-fb" id="guessFb"></div><div class="controls"><button class="go" id="newGuessBtn" onclick="playGuessGame()">🔄 حرکت جدید</button></div></div>
+
+<!-- PAGE 6: جمع -->
+<div class="page" id="page6"><div class="typing-box" id="type6"></div><div class="select-box"><select id="eqSelectAdd" onchange="changeEqAdd(this.value)"><option value="1">(+3) + (+2)</option><option value="2">(+3) + (-2)</option><option value="3">(-3) + (+2)</option><option value="4">(-3) + (-2)</option><option value="5">(-2) + (-4)</option></select></div><div class="expr" id="exprAdd"></div><div class="stage" id="stageAdd"><div class="axis"></div><div class="origin"></div><div class="human" id="humanAdd"></div><svg class="vector-layer" id="vectorLayerAdd"></svg></div><div class="step-box" id="stepAdd">برای دیدن حرکت، دکمه «نمایش» را بزن</div><div class="controls"><button class="go" id="playAdd" onclick="runAddDemo()">▶ نمایش حرکت</button><button onclick="resetAdd()">↺ ریست</button><button class="go" onclick="startAddQuiz()">🎯 شروع تمرین</button></div><div class="feedback" id="fbAdd"></div><div class="quiz hidden" id="quizAdd"><div class="quiz-step" id="qsAdd"></div><div class="quiz-q" id="qqAdd"></div><div id="qbodyAdd"></div><div class="quiz-fb" id="qfbAdd"></div></div></div>
+
+<!-- PAGE 7: تقسیم -->
+<div class="page" id="page7"><div class="typing-box" id="type7"></div><div class="select-box"><select id="eqSelectDiv" onchange="changeEqDiv(this.value)"><option value="1">(+6) ÷ (+2) [بخش‌پذیر]</option><option value="2">(+6) ÷ (-2) [بخش‌پذیر]</option><option value="3">(-6) ÷ (+2) [بخش‌پذیر]</option><option value="4">(-6) ÷ (-2) [بخش‌پذیر]</option><option value="5">(+5) ÷ (+2) [غیربخش‌پذیر]</option><option value="6">(+5) ÷ (-2) [غیربخش‌پذیر]</option><option value="7">(-5) ÷ (+2) [غیربخش‌پذیر]</option></select></div><div class="expr" id="exprDiv"></div><div class="stage" id="stageDiv"><div class="axis"></div><div class="origin"></div><div class="human" id="humanDiv"></div><svg class="vector-layer" id="vectorLayerDiv"></svg></div><div class="step-box" id="stepDiv">برای دیدن حرکت، دکمه «نمایش» را بزن</div><div class="controls"><button class="go" id="playDiv" onclick="runDivDemo()">▶ نمایش حرکت</button><button onclick="resetDiv()">↺ ریست</button><button class="go" onclick="startDivQuiz()">🎯 شروع تمرین</button></div><div class="feedback" id="fbDiv"></div><div class="quiz hidden" id="quizDiv"><div class="quiz-step" id="qsDiv"></div><div class="quiz-q" id="qqDiv"></div><div id="qbodyDiv"></div><div class="quiz-fb" id="qfbDiv"></div></div></div>
+<script>
+/* =====================================================
+   متغیرهای عمومی و توابع کمکی
+   ===================================================== */
+let score = 0;
+const scale = 6.5; // ۱ واحد = ۶.۵ درصد
+const colors = ['#38bdf8', '#22c55e', '#fbbf24', '#f472b6'];
+let running = {1:false, 2:false, 3:false, 4:false, 5:false, 6:false, 7:false};
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+// افکت تایپ کلمه به کلمه
+function typeText(elementId, text) {
+  const box = document.getElementById(elementId);
+  if(!box) return;
+  box.innerHTML = '';
+  text.split(' ').forEach((word, i) => {
+    const span = document.createElement('span');
+    span.textContent = word;
+    span.style.animationDelay = `${i * 0.05}s`;
+    box.appendChild(span);
+  });
+}
+
+// رسم آدمک ویلچری
+function wheelchairSVG(faceDir){
+  const flip = faceDir === 1 ? 1 : -1;
+  return `<svg viewBox="0 0 130 150" xmlns="http://www.w3.org/2000/svg"><g transform="translate(65,0) scale(${flip},1) translate(-65,0)"><circle cx="65" cy="110" r="30" fill="none" stroke="#64748b" stroke-width="4"/><circle cx="65" cy="110" r="4" fill="#94a3b8"/><line x1="65" y1="80" x2="65" y2="140" stroke="#94a3b8" stroke-width="1.5"/><line x1="35" y1="110" x2="95" y2="110" stroke="#94a3b8" stroke-width="1.5"/><line x1="44" y1="89" x2="86" y2="131" stroke="#94a3b8" stroke-width="1.5"/><line x1="86" y1="89" x2="44" y2="131" stroke="#94a3b8" stroke-width="1.5"/><circle cx="105" cy="128" r="10" fill="none" stroke="#64748b" stroke-width="3"/><circle cx="105" cy="128" r="2" fill="#94a3b8"/><path d="M40 70 L90 70 L92 95 L38 95 Z" fill="#334155" stroke="#1e293b" stroke-width="2"/><path d="M40 40 L40 72" stroke="#334155" stroke-width="6" stroke-linecap="round"/><path d="M38 55 L30 55" stroke="#475569" stroke-width="4" stroke-linecap="round"/><line x1="90" y1="95" x2="105" y2="120" stroke="#334155" stroke-width="3"/><ellipse cx="60" cy="24" rx="15" ry="17" fill="#fcd9b6" stroke="#8b5e3c" stroke-width="1.5"/><path d="M45 14 Q48 2 62 3 Q74 5 74 18 Q75 30 72 40 L66 40 Q70 28 68 18 Q60 12 50 16 Q47 22 47 32 L43 32 Q43 18 45 14 Z" fill="#5b2c11"/><path d="M72 22 L78 27 L72 30" fill="#fcd9b6" stroke="#8b5e3c" stroke-width="1.2" stroke-linejoin="round"/><circle cx="66" cy="22" r="2" fill="#1e293b"/><ellipse cx="54" cy="26" rx="3" ry="4" fill="#f0c19a" stroke="#8b5e3c" stroke-width="1"/><rect x="55" y="40" width="8" height="6" fill="#fcd9b6" stroke="#8b5e3c" stroke-width="1"/><path d="M44 46 Q60 44 72 46 L72 72 Q60 76 44 72 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.5"/><path d="M48 72 L78 72 L84 90 L50 90 Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.5"/><ellipse cx="82" cy="94" rx="8" ry="4" fill="#111827"/></g></svg>`;
+}
+
+function placeHuman(id, percent, animate=true){
+  const h = document.getElementById(id);
+  if(!animate) h.style.transition = 'none';
+  h.style.left = percent + '%';
+  h.style.transform = 'translate(-50%,-100%)';
+  if(!animate){ void h.offsetWidth; h.style.transition = ''; }
+}
+
+// رسم محور و تیک‌ها
+function renderTicks(stageId, divisor = 1) {
+  const stage = document.getElementById(stageId);
+  stage.querySelectorAll('.tick').forEach(t => t.remove());
+  const denom = Math.abs(divisor) || 1;
+  for (let i = -10; i <= 10; i++) {
+    if (i !== 0) {
+      const t = document.createElement('div');
+      t.className = 'tick';
+      t.style.left = `calc(50% + ${i * scale}%)`;
+      t.innerHTML = `<span>${i}</span>`;
+      stage.appendChild(t);
+    }
+    if (i < 10 && denom > 1) {
+      for (let j = 1; j < denom; j++) {
+        const val = i + (j / denom);
+        const t = document.createElement('div');
+        t.className = 'tick minor';
+        t.style.left = `calc(50% + ${val * scale}%)`;
+        stage.appendChild(t);
+      }
+    }
+  }
+}
+
+// رسم ردپا
+function drawFootprint(stageId, percent, color) {
+  const stage = document.getElementById(stageId);
+  const fp = document.createElement('div');
+  fp.className = 'footprint show';
+  fp.style.left = percent + '%';
+  fp.style.backgroundColor = color;
+  fp.style.boxShadow = `0 0 8px ${color}`;
+  stage.appendChild(fp);
+}
+
+// رسم بردار
+function drawVector(layerId, stageId, x1Percent, x2Percent, color, isSmall=false) {
+  const stage = document.getElementById(stageId);
+  const layer = document.getElementById(layerId);
+  const rect = stage.getBoundingClientRect();
+  const y = rect.height * 0.70;
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line.setAttribute('x1', rect.width * (x1Percent / 100));
+  line.setAttribute('y1', y);
+  line.setAttribute('x2', rect.width * (x2Percent / 100));
+  line.setAttribute('y2', y);
+  line.setAttribute('stroke', color);
+  line.setAttribute('stroke-width', isSmall ? '2' : '4');
+  line.setAttribute('marker-end', color === '#38bdf8' ? 'url(#arrow-blue)' : (color === '#22c55e' ? 'url(#arrow-green)' : 'url(#arrow-gold)'));
+  layer.appendChild(line);
+}
+
+function clearVectors(layerId) {
+  const layer = document.getElementById(layerId);
+  layer.innerHTML = '';
+}
+
+/* =====================================================
+   مدیریت صفحه‌ها و مقداردهی اولیه
+   ===================================================== */
+function showPage(n) {
+  document.querySelectorAll('.page').forEach((p, i) => p.classList.toggle('active', i + 1 === n));
+  document.querySelectorAll('.nav button').forEach((b, i) => b.classList.toggle('active', i + 1 === n));
+  
+  if(n === 1 && document.getElementById('type1').innerHTML === '') typeText('type1', "در ضرب اعداد صحیح، علامت عدد اول جهت صورت را تعیین می‌کند و علامت عدد دوم جهت حرکت به جلو یا عقب را. سپس به تعداد عدد اول، دسته‌های حرکت انجام می‌شود.");
+  if(n === 2 && document.getElementById('type2').innerHTML === '') typeText('type2', "در ضرب اعداد صحیح، علامت عدد اول جهت صورت را تعیین می‌کند و علامت عدد دوم جهت حرکت به جلو یا عقب را. سپس به تعداد عدد اول، دسته‌های حرکت انجام می‌شود.");
+  if(n === 3 && document.getElementById('type3').innerHTML === '') typeText('type3', "در ضرب اعداد صحیح، علامت عدد اول جهت صورت را تعیین می‌کند و علامت عدد دوم جهت حرکت به جلو یا عقب را. سپس به تعداد عدد اول، دسته‌های حرکت انجام می‌شود.");
+  if(n === 4 && document.getElementById('type4').innerHTML === '') typeText('type4', "در ضرب اعداد صحیح، علامت عدد اول جهت صورت را تعیین می‌کند و علامت عدد دوم جهت حرکت به جلو یا عقب را. سپس به تعداد عدد اول، دسته‌های حرکت انجام می‌شود.");
+  if(n === 5 && document.getElementById('type5').innerHTML === '') { typeText('type5', "به طرز حرکت خوب دقت کن. حالا تو تمرین کن و این حرکت که می‌بینی را حدس بزن."); playGuessGame(); }
+  if(n === 6 && document.getElementById('type6').innerHTML === '') typeText('type6', "در جمع اعداد صحیح باید در آخر، هر عدد با یک علامت باشد و علامت + بین اعداد یعنی، پشت سر هم برای تفریق هم کافیست عبارت به جمع تبدیل شود.");
+  if(n === 7 && document.getElementById('type7').innerHTML === '') typeText('type7', "در تقسیم، اگر عدد اول بر عدد دوم بخش‌پذیر باشد، پیکان عدد اول (آبی) و پیکان عدد دوم (سبز) را رسم می‌کنیم. اگر بخش‌پذیر نباشد، تقسیم را به ضرب در معکوس تبدیل می‌کنیم.");
+}
+
+// مقداردهی اولیه
+[1,2,3,4].forEach(n => {
+  document.getElementById('human'+n).innerHTML = wheelchairSVG(1);
+  renderTicks('stage'+n, 1);
+  placeHuman('human'+n, 50, false);
+  document.getElementById('play'+n).addEventListener('click', function() { setTimeout(() => { if(!running[n]) startMulQuiz(n); }, 100); });
+});
+document.getElementById('human5').innerHTML = wheelchairSVG(1);
+renderTicks('stage5', 1);
+placeHuman('human5', 50, false);
+
+document.getElementById('humanAdd').innerHTML = wheelchairSVG(1);
+renderTicks('stageAdd', 1);
+placeHuman('humanAdd', 50, false);
+changeEqAdd('1');
+
+document.getElementById('humanDiv').innerHTML = wheelchairSVG(1);
+renderTicks('stageDiv', 2);
+placeHuman('humanDiv', 50, false);
+changeEqDiv('1');
+
+/* =====================================================
+   منطق ضرب (صفحات ۱ تا ۴)
+   ===================================================== */
+async function runMulDemo(n){
+  if(running[n]) return;
+  running[n] = true;
+  document.getElementById('play'+n).disabled = true;
+  
+  const fb = document.getElementById('fb'+n), step = document.getElementById('step'+n);
+  const h = document.getElementById('human'+n), stage = document.getElementById('stage'+n);
+  fb.textContent = ''; fb.className = 'feedback'; step.textContent = ''; h.classList.remove('shake');
+  stage.querySelectorAll('.footprint').forEach(el => el.remove());
+
+  const data = { 1:{a:2, aSign:1, b:3, bSign:1, result:6}, 2:{a:2, aSign:1, b:3, bSign:-1, result:-6}, 3:{a:2, aSign:-1, b:3, bSign:1, result:-6}, 4:{a:2, aSign:-1, b:3, bSign:-1, result:6} }[n];
+  const face = data.aSign > 0 ? 'right' : 'left';
+  let dir = face === 'right' ? 1 : -1;
+  if (data.bSign < 0) dir *= -1;
+  
+  h.innerHTML = wheelchairSVG(1); placeHuman('human'+n, 50, false);
+  await sleep(300);
+  
+  h.innerHTML = wheelchairSVG(face === 'right' ? 1 : -1);
+  step.textContent = `① علامت عدد اول ${data.aSign>0?'مثبت':'منفی'} → صورت به ${face==='right'?'راست':'چپ'}`;
+  await sleep(1000);
+
+  let currentPercent = 50;
+  for(let g = 1; g <= data.a; g++){
+    const color = colors[(g-1) % colors.length];
+    step.textContent = `دسته ${g} از ${data.a}: ${data.b} حرکت به ${dir > 0 ? 'راست' : 'چپ'}`;
+    for(let s = 0; s < data.b; s++){
+      currentPercent += dir * scale;
+      placeHuman('human'+n, currentPercent, true);
+      drawFootprint('stage'+n, currentPercent, color);
+      await sleep(600);
+    }
+    await sleep(400);
+  }
+  
+  step.textContent = `نتیجه: ${data.result>0?'+':''}${data.result}`;
+  fb.textContent = `✅ ${data.aSign>0?'+':'-'}${data.a} × ${data.bSign>0?'+':'-'}${data.b} = ${data.result>0?'+':''}${data.result}`;
+  fb.className = 'feedback ' + (data.result>0?'ok':'bad');
+  running[n] = false;
+  document.getElementById('play'+n).disabled = false;
+}
+
+function resetMul(n){
+  if(running[n]) return;
+  document.getElementById('human'+n).innerHTML = wheelchairSVG(1);
+  placeHuman('human'+n, 50, false);
+  document.getElementById('stage'+n).querySelectorAll('.footprint').forEach(el => el.remove());
+  document.getElementById('fb'+n).textContent = ''; document.getElementById('fb'+n).className = 'feedback';
+  document.getElementById('step'+n).textContent = 'برای دیدن حرکت، دکمه «نمایش» را بزن';
+  document.getElementById('human'+n).classList.remove('shake');
+  document.getElementById('quiz'+n).classList.add('hidden');
+}
+
+/* Quiz Mul */
+let quizMulState = {};
+function startMulQuiz(n){
+  const data = { 1:{a:2, b:3, aSign:1, bSign:1}, 2:{a:2, b:3, aSign:1, bSign:-1}, 3:{a:2, b:3, aSign:-1, bSign:1}, 4:{a:2, b:3, aSign:-1, bSign:-1} }[n];
+  quizMulState[n] = { step: 0, data };
+  document.getElementById('quiz'+n).classList.remove('hidden');
+  renderMulQuiz(n);
+}
+
+function renderMulQuiz(n){
+  const qs = quizMulState[n], body = document.getElementById('qbody'+n), qstep = document.getElementById('qs'+n), qq = document.getElementById('qq'+n), qfb = document.getElementById('qfb'+n);
+  qfb.textContent = ''; qfb.className = 'quiz-fb'; body.innerHTML = '';
+  const data = qs.data;
+
+  if(qs.step === 0){
+    qstep.textContent = 'مرحله ۱ از ۴';
+    qq.textContent = `علامت عدد اول (${data.aSign>0?'+':'-'}) جهت صورت را تعیین می‌کند. صورت به کدام سمت باشد؟`;
+    body.innerHTML = `<div class="quiz-row"><button class="choice" onclick="ansMulFace(${n},'right')">➡️ راست</button><button class="choice" onclick="ansMulFace(${n},'left')">⬅️ چپ</button></div>`;
+  } else if(qs.step === 1){
+    qstep.textContent = 'مرحله ۲ از ۴';
+    qq.textContent = `چند حرکت باید انجام شود؟`;
+    body.innerHTML = `<input class="quiz-input" id="qin${n}" type="number" inputmode="numeric" /><div class="quiz-row"><button class="go" onclick="ansMulCount(${n})">تأیید</button></div>`;
+    setTimeout(() => document.getElementById('qin'+n).focus(), 50);
+  } else if(qs.step === 2){
+    qstep.textContent = 'مرحله ۳ از ۴';
+    qq.textContent = `علامت عدد دوم (${data.bSign>0?'+':'-'}) جهت پرتاب را تعیین می‌کند. به کدام سمت؟`;
+    body.innerHTML = `<div class="quiz-row"><button class="choice" onclick="ansMulHand(${n},'front')">💪 رو به جلو</button><button class="choice" onclick="ansMulHand(${n},'back')">💪 رو به عقب</button></div>`;
+  } else if(qs.step === 3){
+    qstep.textContent = 'مرحله ۴ از ۴';
+    qq.textContent = `میزان هر حرکت چقدر است؟`;
+    body.innerHTML = `<input class="quiz-input" id="qin${n}" type="number" inputmode="numeric" /><div class="quiz-row"><button class="go" onclick="ansMulAmount(${n})">تأیید</button></div>`;
+    setTimeout(() => document.getElementById('qin'+n).focus(), 50);
+  } else {
+    qstep.textContent = '🎉 تبریک!';
+    qq.textContent = 'همه مراحل را درست پاسخ دادی! حالا اجرای نهایی را ببین.';
+    body.innerHTML = `<div class="quiz-row"><button class="go" onclick="startMulQuiz(${n})">🔄 تکرار تمرین</button></div>`;
+    score += 40; document.getElementById('score').textContent = score;
+    setTimeout(() => runMulDemo(n), 1000);
+  }
+}
+
+function ansMulFace(n, c){ const qs = quizMulState[n]; if(c === (qs.data.aSign>0?'right':'left')){ qs.step++; document.getElementById('qfb'+n).textContent='✅ درست!'; document.getElementById('qfb'+n).className='quiz-fb ok'; setTimeout(()=>renderMulQuiz(n), 700); } else { document.getElementById('qfb'+n).textContent='❌ اشتباه!'; document.getElementById('qfb'+n).className='quiz-fb bad'; } }
+function ansMulCount(n){ const qs = quizMulState[n]; if(parseInt(document.getElementById('qin'+n).value) === qs.data.a){ qs.step++; document.getElementById('qfb'+n).textContent='✅ درست!'; document.getElementById('qfb'+n).className='quiz-fb ok'; setTimeout(()=>renderMulQuiz(n), 700); } else { document.getElementById('qfb'+n).textContent=`❌ اشتباه! ${qs.data.a} بار.`; document.getElementById('qfb'+n).className='quiz-fb bad'; } }
+function ansMulHand(n, c){ const qs = quizMulState[n]; if(c === (qs.data.bSign>0?'front':'back')){ qs.step++; document.getElementById('qfb'+n).textContent='✅ درست!'; document.getElementById('qfb'+n).className='quiz-fb ok'; setTimeout(()=>renderMulQuiz(n), 700); } else { document.getElementById('qfb'+n).textContent='❌ اشتباه!'; document.getElementById('qfb'+n).className='quiz-fb bad'; } }
+function ansMulAmount(n){ const qs = quizMulState[n]; if(parseInt(document.getElementById('qin'+n).value) === qs.data.b){ qs.step++; document.getElementById('qfb'+n).textContent='✅ درست!'; document.getElementById('qfb'+n).className='quiz-fb ok'; setTimeout(()=>renderMulQuiz(n), 700); } else { document.getElementById('qfb'+n).textContent=`❌ اشتباه! ${qs.data.b} قدم.`; document.getElementById('qfb'+n).className='quiz-fb bad'; } }
+
+/* =====================================================
+   بازی حدس ضرب (صفحه ۵)
+   ===================================================== */
+const guessOptions = [ { text: '(+2) × (+3)', a:2, aSign:1, b:3, bSign:1 }, { text: '(+2) × (-3)', a:2, aSign:1, b:3, bSign:-1 }, { text: '(-2) × (+3)', a:2, aSign:-1, b:3, bSign:1 }, { text: '(-2) × (-3)', a:2, aSign:-1, b:3, bSign:-1 } ];
+let currentGuessAnswer = null;
+
+async function playGuessGame(){
+  if(running[5]) return; running[5] = true;
+  const stage = document.getElementById('stage5'), human = document.getElementById('human5'), stepBox = document.getElementById('step5'), optionsDiv = document.getElementById('guessOptions'), fb = document.getElementById('guessFb');
+  stage.querySelectorAll('.footprint').forEach(el => el.remove()); optionsDiv.innerHTML = ''; fb.textContent = ''; fb.className = 'quiz-fb';
+  stepBox.textContent = 'آماده باش...';
+  human.style.transition = 'none'; human.style.left = '50%'; human.innerHTML = wheelchairSVG(1); void human.offsetWidth; human.style.transition = '';
+  await sleep(1000);
+
+  const randomIdx = Math.floor(Math.random() * guessOptions.length), data = guessOptions[randomIdx]; currentGuessAnswer = randomIdx;
+  const face = data.aSign > 0 ? 'right' : 'left'; let dir = face === 'right' ? 1 : -1; if (data.bSign < 0) dir *= -1;
+  
+  human.innerHTML = wheelchairSVG(face === 'right' ? 1 : -1); stepBox.textContent = `حرکت در حال اجراست...`; await sleep(800);
+
+  let currentPercent = 50;
+  for(let g = 1; g <= data.a; g++){
+    const color = colors[(g-1) % colors.length];
+    for(let s = 0; s < data.b; s++){
+      currentPercent += dir * scale; human.style.left = currentPercent + '%';
+      const fp = document.createElement('div'); fp.className = 'footprint show'; fp.style.left = currentPercent + '%'; fp.style.backgroundColor = color; fp.style.boxShadow = `0 0 8px ${color}`; stage.appendChild(fp);
+      await sleep(500);
+    }
+    await sleep(300);
+  }
+
+  stepBox.textContent = 'حالا حدس بزن کدام ضرب اجرا شد:';
+  guessOptions.forEach((opt, idx) => {
+    const btn = document.createElement('button'); btn.className = 'guess-btn'; btn.textContent = opt.text; btn.onclick = () => checkGuess(idx, btn); optionsDiv.appendChild(btn);
+  });
+  running[5] = false;
+}
+
+function checkGuess(idx, btn){
+  const fb = document.getElementById('guessFb'), allBtns = document.querySelectorAll('.guess-btn');
+  allBtns.forEach(b => b.disabled = true);
+  if(idx === currentGuessAnswer){ btn.classList.add('correct'); fb.textContent = '🎉 آفرین! حدس تو درست بود.'; fb.className = 'quiz-fb ok'; score += 20; document.getElementById('score').textContent = score; } 
+  else { btn.classList.add('wrong'); fb.textContent = '❌ اشتباه بود! جواب صحیح سبز شد.'; fb.className = 'quiz-fb bad'; if(allBtns[currentGuessAnswer]) allBtns[currentGuessAnswer].classList.add('correct'); }
+}
+
+/* =====================================================
+   جمع (صفحه ۶)
+   ===================================================== */
+let currentAdd = { a:3, b:2, res:5 };
+function changeEqAdd(val){
+  if(running[6]) return;
+  const eqs = { '1': { a:3, b:2 }, '2': { a:3, b:-2 }, '3': { a:-3, b:2 }, '4': { a:-3, b:-2 }, '5': { a:-2, b:-4 } };
+  currentAdd = { ...eqs[val], res: eqs[val].a + eqs[val].b };
+  document.getElementById('exprAdd').innerHTML = `<span class="${currentAdd.a>0?'p':'n'}">(${currentAdd.a>0?'+':''}${currentAdd.a})</span> + <span class="${currentAdd.b>0?'p':'n'}">(${currentAdd.b>0?'+':''}${currentAdd.b})</span> = ?`;
+  resetAdd();
+}
+
+async function runAddDemo(){
+  if(running[6]) return; running[6] = true; document.getElementById('playAdd').disabled = true; document.getElementById('eqSelectAdd').disabled = true;
+  resetAdd(true); await sleep(300);
+
+  const a = currentAdd.a, b = currentAdd.b, res = currentAdd.res;
+  const dirA = a > 0 ? 1 : -1, dirB = b > 0 ? 1 : -1;
+  let currentX = 50;
+  
+  document.getElementById('humanAdd').innerHTML = wheelchairSVG(dirA);
+  document.getElementById('stepAdd').textContent = `① حرکت اول: ${a} (به ${dirA===1?'راست':'چپ'})`; await sleep(1000);
+  
+  for(let i=0; i<Math.abs(a); i++){ currentX += dirA * scale; placeHuman('humanAdd', currentX); drawFootprint('stageAdd', currentX, '#38bdf8'); await sleep(500); }
+  await sleep(500);
+
+  document.getElementById('humanAdd').innerHTML = wheelchairSVG(dirB);
+  document.getElementById('stepAdd').textContent = `② حرکت دوم: ${b} (به ${dirB===1?'راست':'چپ'})`; await sleep(1000);
+  
+  for(let i=0; i<Math.abs(b); i++){ currentX += dirB * scale; placeHuman('humanAdd', currentX); drawFootprint('stageAdd', currentX, '#22c55e'); await sleep(500); }
+  await sleep(500);
+
+  document.getElementById('stepAdd').textContent = `③ رسم بردار از صفر تا حاصل جمع`; drawVector('vectorLayerAdd', 'stageAdd', 50, currentX, '#fbbf24'); await sleep(1000);
+
+  document.getElementById('stepAdd').textContent = `نتیجه: ${res>0?'+':''}${res}`;
+  document.getElementById('fbAdd').textContent = `✅ حاصل جمع: ${res>0?'+':''}${res}`; document.getElementById('fbAdd').className = 'feedback ok';
+  
+  running[6] = false; document.getElementById('playAdd').disabled = false; document.getElementById('eqSelectAdd').disabled = false;
+}
+
+function resetAdd(keepRun=false){
+  if(running[6] && !keepRun) return;
+  document.getElementById('humanAdd').innerHTML = wheelchairSVG(1); placeHuman('humanAdd', 50, false);
+  document.getElementById('stageAdd').querySelectorAll('.footprint').forEach(el => el.remove()); clearVectors('vectorLayerAdd');
+  document.getElementById('stepAdd').textContent = 'برای دیدن حرکت، دکمه «نمایش» را بزن';
+  document.getElementById('fbAdd').textContent = ''; document.getElementById('fbAdd').className = 'feedback';
+  if(!keepRun) document.getElementById('quizAdd').classList.add('hidden');
+}
+
+let quizAddState = { step:0, data:null };
+function startAddQuiz(){
+  if(running[6]) return;
+  const eqs = [{a:3, b:2}, {a:3, b:-2}, {a:-3, b:2}, {a:-3, b:-2}];
+  quizAddState = { step: 0, data: eqs[Math.floor(Math.random()*eqs.length)] };
+  document.getElementById('quizAdd').classList.remove('hidden'); renderAddQuiz();
+}
+
+function renderAddQuiz(){
+  const body = document.getElementById('qbodyAdd'), qstep = document.getElementById('qsAdd'), qq = document.getElementById('qqAdd'), qfb = document.getElementById('qfbAdd');
+  qfb.textContent = ''; qfb.className = 'quiz-fb'; body.innerHTML = ''; const data = quizAddState.data;
+
+  if(quizAddState.step === 0){
+    qstep.textContent = 'مرحله ۱ از ۴'; qq.textContent = `عدد اول (${data.a}) به کدام سمت؟`;
+    body.innerHTML = `<div class="quiz-row"><button class="choice" onclick="ansAddDir(0,'right')">➡️ راست</button><button class="choice" onclick="ansAddDir(0,'left')">⬅️ چپ</button></div>`;
+  } else if(quizAddState.step === 1){
+    qstep.textContent = 'مرحله ۲ از ۴'; qq.textContent = `چند قدم برای عدد اول؟`;
+    body.innerHTML = `<input class="quiz-input" id="qinAdd" type="number" /><div class="quiz-row"><button class="go" onclick="ansAddCount(0)">تأیید</button></div>`;
+  } else if(quizAddState.step === 2){
+    qstep.textContent = 'مرحله ۳ از ۴'; qq.textContent = `عدد دوم (${data.b}) به کدام سمت؟`;
+    body.innerHTML = `<div class="quiz-row"><button class="choice" onclick="ansAddDir(1,'right')">➡️ راست</button><button class="choice" onclick="ansAddDir(1,'left')">⬅️ چپ</button></div>`;
+  } else if(quizAddState.step === 3){
+    qstep.textContent = 'مرحله ۴ از ۴'; qq.textContent = `چند قدم برای عدد دوم؟`;
+    body.innerHTML = `<input class="quiz-input" id="qinAdd" type="number" /><div class="quiz-row"><button class="go" onclick="ansAddCount(1)">تأیید</button></div>`;
+  } else {
+    qstep.textContent = '🎉 تبریک!'; qq.textContent = 'حالا اجرای نهایی را ببین.';
+    body.innerHTML = `<div class="quiz-row"><button class="go" onclick="startAddQuiz()">🔄 تکرار</button></div>`;
+    setTimeout(() => { currentAdd = { a:data.a, b:data.b, res:data.a+data.b }; changeEqAdd('1'); runAddDemo(); }, 1000);
+  }
+}
+function ansAddDir(idx, c){ const d = quizAddState.data; if(c === (idx===0?(d.a>0?'right':'left'):(d.b>0?'right':'left'))){ document.getElementById('qfbAdd').textContent='✅'; document.getElementById('qfbAdd').className='quiz-fb ok'; quizAddState.step++; setTimeout(renderAddQuiz, 700); } else { document.getElementById('qfbAdd').textContent='❌'; document.getElementById('qfbAdd').className='quiz-fb bad'; } }
+function ansAddCount(idx){ const d = quizAddState.data; if(parseInt(document.getElementById('qinAdd').value) === (idx===0?Math.abs(d.a):Math.abs(d.b))){ document.getElementById('qfbAdd').textContent='✅'; document.getElementById('qfbAdd').className='quiz-fb ok'; quizAddState.step++; setTimeout(renderAddQuiz, 700); } else { document.getElementById('qfbAdd').textContent='❌'; document.getElementById('qfbAdd').className='quiz-fb bad'; } }
+
+/* =====================================================
+   تقسیم (صفحه ۷)
+   ===================================================== */
+let currentDiv = { a:6, b:2 };
+function changeEqDiv(val){
+  if(running[7]) return;
+  const eqs = { '1': {a:6, b:2}, '2': {a:6, b:-2}, '3': {a:-6, b:2}, '4': {a:-6, b:-2}, '5': {a:5, b:2}, '6': {a:5, b:-2}, '7': {a:-5, b:2} };
+  currentDiv = eqs[val];
+  document.getElementById('exprDiv').innerHTML = `<span class="${currentDiv.a>0?'p':'n'}">(${currentDiv.a>0?'+':''}${currentDiv.a})</span> ÷ <span class="${currentDiv.b>0?'p':'n'}">(${currentDiv.b>0?'+':''}${currentDiv.b})</span> = ?`;
+  renderTicks('stageDiv', currentDiv.b); resetDiv();
+}
+
+async function runDivDemo(){
+  if(running[7]) return; running[7] = true; document.getElementById('playDiv').disabled = true; document.getElementById('eqSelectDiv').disabled = true;
+  resetDiv(true);
+  
+  const a = currentDiv.a, b = currentDiv.b, isExact = Math.abs(a % b) === 0;
+  const qAbs = Math.abs(a / b);
+
+  if(isExact){
+    document.getElementById('stepDiv').textContent = `① رسم پیکان عدد اول (آبی)`; await sleep(800); drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); await sleep(1000);
+    document.getElementById('stepDiv').textContent = `② رسم پیکان عدد دوم (سبز)`; await sleep(800); drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + b*scale, '#22c55e'); await sleep(1000);
     
-    <div id="status">Δ مثبت: ریشه‌ها حقیقی</div>
+    document.getElementById('stepDiv').textContent = `③ تکرار پیکان سبز ${qAbs} بار`; let cx = 50;
+    for(let i=0; i<qAbs; i++){ let nx = cx + b*scale; drawVector('vectorLayerDiv', 'stageDiv', cx, nx, '#22c55e'); cx = nx; await sleep(600); }
+    await sleep(500);
 
-    <div id="controls">
-        <label>a: <input type="range" id="a" min="-2" max="2" step="0.1" value="1"></label>
-        <label>b: <input type="range" id="b" min="-10" max="10" step="0.5" value="2"></label>
-        <label>c: <input type="range" id="c" min="-10" max="10" step="0.5" value="5"></label>
-    </div>
+    document.getElementById('stepDiv').textContent = `④ ادغام پیکان‌ها`; clearVectors('vectorLayerDiv'); drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#22c55e'); await sleep(1000);
+    
+    const sameDir = (a > 0 && b > 0) || (a < 0 && b < 0); let sign = '';
+    if(!sameDir){ document.getElementById('stepDiv').textContent = `⑤ جهت‌ها متفاوت است! پیکان برمی‌گردد.`; sign = '-'; clearVectors('vectorLayerDiv'); drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); drawVector('vectorLayerDiv', 'stageDiv', 50, 50 - a*scale, '#22c55e'); await sleep(1000); } 
+    else { document.getElementById('stepDiv').textContent = `⑤ جهت‌ها یکی است.`; await sleep(1000); }
+    
+    document.getElementById('exprDiv').innerHTML = `<span class="${a>0?'p':'n'}">(${a})</span> ÷ <span class="${b>0?'p':'n'}">(${b})</span> = <span class="${sameDir?'p':'n'}">${sign}${qAbs}</span>`;
+    document.getElementById('fbDiv').textContent = `✅ حاصل: ${sign}${qAbs}`; document.getElementById('fbDiv').className = 'feedback ok';
+  } 
+  else {
+    document.getElementById('stepDiv').textContent = `① نوشتن به صورت کسری و ضرب در معکوس`;
+    const aStr = `(${a>0?'+':''}${a})`, bStr = `(${b>0?'+':''}${b})`;
+    document.getElementById('exprDiv').innerHTML = `<span class="${a>0?'p':'n'}">${aStr}</span> ÷ <span class="${b>0?'p':'n'}">${bStr}</span> = <span class="fraction"><span>${aStr}</span><span>${bStr}</span></span>`; await sleep(1500);
+    document.getElementById('exprDiv').innerHTML = `<span class="${a>0?'p':'n'}">${aStr}</span> × <span class="fraction"><span>1</span><span>${bStr}</span></span>`; await sleep(1500);
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
+    document.getElementById('stepDiv').textContent = `② رسم پیکان‌های کوچک`;
+    const smallLen = (1 / Math.abs(b)) * scale; const finalDir = ((a > 0 && b > 0) || (a < 0 && b < 0)) ? 1 : -1;
+    document.getElementById('humanDiv').innerHTML = wheelchairSVG(finalDir);
+    let cx = 50;
+    for(let i=0; i<Math.abs(a); i++){ let nx = cx + (finalDir * smallLen); drawVector('vectorLayerDiv', 'stageDiv', cx, nx, '#22c55e', true); placeHuman('humanDiv', nx); cx = nx; await sleep(500); }
+    await sleep(500);
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    document.getElementById('stepDiv').textContent = `③ ادغام`; clearVectors('vectorLayerDiv'); drawVector('vectorLayerDiv', 'stageDiv', 50, cx, '#22c55e'); await sleep(1500);
+    
+    const finalSign = finalDir === 1 ? '' : '-'; const absRes = Math.abs(a / b);
+    document.getElementById('exprDiv').innerHTML = `<span class="${a>0?'p':'n'}">${aStr}</span> ÷ <span class="${b>0?'p':'n'}">${bStr}</span> = <span class="${finalDir===1?'p':'n'}">${finalSign}${absRes}</span>`;
+    document.getElementById('stepDiv').textContent = `④ نتیجه: ${finalSign}${absRes}`;
+    document.getElementById('fbDiv').textContent = `✅ حاصل: ${finalSign}${absRes}`; document.getElementById('fbDiv').className = 'feedback ok';
+  }
+  running[7] = false; document.getElementById('playDiv').disabled = false; document.getElementById('eqSelectDiv').disabled = false;
+}
 
-        // 1. تنظیمات صحنه
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x111122);
+function resetDiv(keepRun=false){
+  if(running[7] && !keepRun) return;
+  document.getElementById('humanDiv').innerHTML = wheelchairSVG(1); placeHuman('humanDiv', 50, false); clearVectors('vectorLayerDiv');
+  document.getElementById('stepDiv').textContent = 'برای دیدن حرکت، دکمه «نمایش» را بزن';
+  document.getElementById('fbDiv').textContent = ''; document.getElementById('fbDiv').className = 'feedback';
+  if(!keepRun) document.getElementById('quizDiv').classList.add('hidden');
+}
 
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(10, 12, 15);
-        camera.lookAt(0, 0, 0);
+let quizDivState = { step:0, data:null };
+function startDivQuiz(){
+  if(running[7]) return;
+  const eqs = [{a:6, b:2, exact:true}, {a:6, b:-2, exact:true}, {a:-8, b:4, exact:true}, {a:5, b:2, exact:false}, {a:-5, b:-2, exact:false}];
+  quizDivState = { step: 0, data: eqs[Math.floor(Math.random()*eqs.length)] };
+  document.getElementById('quizDiv').classList.remove('hidden'); renderDivQuiz();
+}
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.body.appendChild(renderer.domElement);
+function renderDivQuiz(){
+  const body = document.getElementById('qbodyDiv'), qstep = document.getElementById('qsDiv'), qq = document.getElementById('qqDiv'), qfb = document.getElementById('qfbDiv');
+  qfb.textContent = ''; qfb.className = 'quiz-fb'; body.innerHTML = ''; const data = quizDivState.data;
 
-        // 2. کنترل چرخش
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
+  if(quizDivState.step === 0){
+    qstep.textContent = 'مرحله ۱ از ۲'; qq.textContent = `آیا ${data.a} بر ${data.b} بخش‌پذیر است؟`;
+    body.innerHTML = `<div class="quiz-row"><button class="choice" onclick="ansDivExact(true)">✅ بله</button><button class="choice" onclick="ansDivExact(false)">❌ خیر</button></div>`;
+  } else if(quizDivState.step === 1){
+    qstep.textContent = 'مرحله ۲ از ۲'; qq.textContent = `حاصل ${data.a} ÷ ${data.b} چند است؟`;
+    body.innerHTML = `<input class="quiz-input" id="qinDiv" type="text" placeholder="مثلا -2.5" /><div class="quiz-row"><button class="go" onclick="ansDivResult()">تأیید</button></div>`;
+  } else {
+    qstep.textContent = '🎉 تبریک!'; qq.textContent = 'حالا اجرای نهایی را ببین.';
+    body.innerHTML = `<div class="quiz-row"><button class="go" onclick="startDivQuiz()">🔄 تکرار</button></div>`;
+    setTimeout(() => { currentDiv = { a:data.a, b:data.b }; document.getElementById('exprDiv').innerHTML = `<span class="${data.a>0?'p':'n'}">(${data.a})</span> ÷ <span class="${data.b>0?'p':'n'}">(${data.b})</span> = ?`; renderTicks('stageDiv', data.b); runDivDemo(); }, 1000);
+  }
+}
+function ansDivExact(isExact){ if(isExact === (quizDivState.data.a % quizDivState.data.b === 0)){ document.getElementById('qfbDiv').textContent='✅'; document.getElementById('qfbDiv').className='quiz-fb ok'; quizDivState.step++; setTimeout(renderDivQuiz, 700); } else { document.getElementById('qfbDiv').textContent='❌'; document.getElementById('qfbDiv').className='quiz-fb bad'; } }
+function ansDivResult(){ const val = parseFloat(document.getElementById('qinDiv').value); const correct = quizDivState.data.a / quizDivState.data.b; if(Math.abs(val - correct) < 0.01){ document.getElementById('qfbDiv').textContent='✅'; document.getElementById('qfbDiv').className='quiz-fb ok'; quizDivState.step++; setTimeout(renderDivQuiz, 700); } else { document.getElementById('qfbDiv').textContent=`❌ جواب ${correct} است.`; document.getElementById('qfbDiv').className='quiz-fb bad'; } }
 
-        // 3. نورپردازی
-        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        dirLight.position.set(10, 20, 10);
-        scene.add(dirLight);
-
-        // 4. محورها
-        function createAxis(start, end, color) {
-            const material = new THREE.LineBasicMaterial({ color: color, linewidth: 2 });
-            const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)];
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            return new THREE.Line(geometry, material);
-        }
-        scene.add(createAxis([-10, 0, 0], [10, 0, 0], 0xff4444)); // X
-        scene.add(createAxis([0, -10, 0], [0, 10, 0], 0x44ff44)); // Y
-        scene.add(createAxis([0, 0, -10], [0, 0, 10], 0x4444ff)); // Z
-
-        // برچسب محورها
-        function createLabel(text, position, color) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 128; canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = color; ctx.font = 'bold 30px Tahoma';
-            ctx.textAlign = 'center'; ctx.fillText(text, 64, 45);
-            const texture = new THREE.CanvasTexture(canvas);
-            const material = new THREE.SpriteMaterial({ map: texture });
-            const sprite = new THREE.Sprite(material);
-            sprite.position.set(...position); sprite.scale.set(2, 1, 1);
-            return sprite;
-        }
-        scene.add(createLabel('X', [10, 0.5, 0], '#ff4444'));
-        scene.add(createLabel('Y', [0, 10, 0], '#44ff44'));
-        scene.add(createLabel('Z', [0, 0.5, 10], '#4444ff'));
-
-        // 5. گروه کج شده برای سهمی
-        const parabolaGroup = new THREE.Group();
-        parabolaGroup.rotation.x = -Math.PI / 6;
-        scene.add(parabolaGroup);
-
-        // 6. عناصر داینامیک
-        let parabolaMesh = null;
-        let axisLine = null;
-        let rootSpheres = [];
-        let complexLine = null;
-        let dashLine = null;
-
-        function clearScene() {
-            if (parabolaMesh) { parabolaGroup.remove(parabolaMesh); parabolaMesh.geometry.dispose(); parabolaMesh.material.dispose(); }
-            if (axisLine) { parabolaGroup.remove(axisLine); axisLine.geometry.dispose(); axisLine.material.dispose(); }
-            if (complexLine) { scene.remove(complexLine); complexLine.geometry.dispose(); complexLine.material.dispose(); }
-            if (dashLine) { scene.remove(dashLine); dashLine.geometry.dispose(); dashLine.material.dispose(); }
-            rootSpheres.forEach(s => { scene.remove(s); s.geometry.dispose(); s.material.dispose(); });
-            rootSpheres = [];
-        }
-
-        function updateScene() {
-            const a = parseFloat(document.getElementById('a').value);
-            const b = parseFloat(document.getElementById('b').value);
-            const c = parseFloat(document.getElementById('c').value);
-            const delta = b * b - 4 * a * c;
-            const statusDiv = document.getElementById('status');
-
-            clearScene();
-
-            // رسم سهمی
-            const points = [];
-            for (let x = -6; x <= 6; x += 0.1) {
-                const y = a * x * x + b * x + c;
-                points.push(new THREE.Vector3(x, y, 0));
-            }
-            const curve = new THREE.CatmullRomCurve3(points);
-            const tubeGeo = new THREE.TubeGeometry(curve, 100, 0.15, 8, false);
-            const tubeMat = new THREE.MeshPhongMaterial({ color: 0x0056b3, emissive: 0x001122 });
-            parabolaMesh = new THREE.Mesh(tubeGeo, tubeMat);
-            parabolaGroup.add(parabolaMesh);
-
-            // رسم محور تقارن
-            const axisX = -b / (2 * a);
-            const axisPoints = [new THREE.Vector3(axisX, -10, 0), new THREE.Vector3(axisX, 15, 0)];
-            const axisGeo = new THREE.BufferGeometry().setFromPoints(axisPoints);
-            const axisMat = new THREE.LineDashedMaterial({ color: 0x5cb85c, dashSize: 0.8, gapSize: 0.5 });
-            axisLine = new THREE.Line(axisGeo, axisMat);
-            axisLine.computeLineDistances();
-            parabolaGroup.add(axisLine);
-
-            const realPart = -b / (2 * a);
-
-            if (delta >= 0) {
-                // ریشه‌های حقیقی
-                statusDiv.textContent = `Δ = ${delta.toFixed(2)} (مثبت) → ریشه‌ها حقیقی`;
-                statusDiv.style.color = '#5cb85c';
-
-                const r1 = (-b + Math.sqrt(delta)) / (2 * a);
-                const r2 = (-b - Math.sqrt(delta)) / (2 * a);
-
-                [r1, r2].forEach(r => {
-                    const sphereGeo = new THREE.SphereGeometry(0.3, 32, 32);
-                    const sphereMat = new THREE.MeshPhongMaterial({ color: 0xd9534f, emissive: 0x441111 });
-                    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-                    sphere.position.set(r, 0, 0);
-                    parabolaGroup.add(sphere); 
-                    rootSpheres.push(sphere);
-                });
-
-            } else {
-                // ریشه‌های مختلط
-                statusDiv.textContent = `Δ = ${delta.toFixed(2)} (منفی) → ریشه‌ها مختلط`;
-                statusDiv.style.color = '#f0ad4e';
-
-                const imagPart = Math.sqrt(-delta) / (2 * a);
-
-                // *** 1. جای خالی ریشه‌ها روی محور X (کم رنگ) ***
-                [1, -1].forEach(sign => {
-                    const ghostGeo = new THREE.SphereGeometry(0.2, 16, 16);
-                    const ghostMat = new THREE.MeshPhongMaterial({ 
-                        color: 0xff8888, 
-                        transparent: true, 
-                        opacity: 0.5,
-                        emissive: 0x441111 
-                    });
-                    const ghost = new THREE.Mesh(ghostGeo, ghostMat);
-                    // فقط در نقطه x = realPart (محل تلاقی با محور تقارن)
-                    ghost.position.set(realPart, 0, 0);
-                    // برای اینکه یک نقطه باشد، فقط یکی را می‌سازیم
-                    if (sign === 1) {
-                        parabolaGroup.add(ghost);
-                        rootSpheres.push(ghost);
-                    }
-                });
-
-                // *** 2. ریشه‌های مختلط (شناور) ***
-                [imagPart, -imagPart].forEach(imag => {
-                    const sphereGeo = new THREE.SphereGeometry(0.4, 32, 32);
-                    const sphereMat = new THREE.MeshPhongMaterial({ color: 0xf0ad4e, emissive: 0x442200 });
-                    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-                    sphere.position.set(realPart, 0, imag);
-                    scene.add(sphere);
-                    rootSpheres.push(sphere);
-                });
-
-                // *** 3. خطوط راهنما (فقط در حالت مختلط) ***
-                const linePoints = [new THREE.Vector3(realPart, 0, imagPart), new THREE.Vector3(realPart, 0, -imagPart)];
-                const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
-                const lineMat = new THREE.LineBasicMaterial({ color: 0xf0ad4e });
-                complexLine = new THREE.Line(lineGeo, lineMat);
-                scene.add(complexLine);
-
-                const dashPoints = [new THREE.Vector3(realPart, 0, imagPart), new THREE.Vector3(realPart, 0, 0)];
-                const dashGeo = new THREE.BufferGeometry().setFromPoints(dashPoints);
-                const dashMat = new THREE.LineDashedMaterial({ color: 0xf0ad4e, dashSize: 0.4, gapSize: 0.3 });
-                dashLine = new THREE.Line(dashGeo, dashMat);
-                dashLine.computeLineDistances();
-                scene.add(dashLine);
-            }
-        }
-
-        document.getElementById('a').addEventListener('input', updateScene);
-        document.getElementById('b').addEventListener('input', updateScene);
-        document.getElementById('c').addEventListener('input', updateScene);
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        updateScene();
-        animate();
-    </script>
+// اجرای تایپ متن صفحه اول در هنگام لود
+showPage(1);
+</script>
 </body>
 </html>
