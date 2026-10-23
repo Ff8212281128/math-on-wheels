@@ -597,50 +597,44 @@ async function runDivDemo(){
     const qAbs = Math.abs(a / b);
 
     if(isExact){
-      document.getElementById('stepDiv').textContent = `① رسم پیکان عدد اول (آبی)`; 
-      await sleep(800); 
-      drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
-      await sleep(1000);
-      
-      document.getElementById('stepDiv').textContent = `② رسم پیکان عدد دوم (سبز)`; 
-      await sleep(800); 
-      drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + b*scale, '#22c55e'); 
-      await sleep(1000);
-      
-      document.getElementById('stepDiv').textContent = `③ تکرار پیکان سبز ${qAbs} بار`; 
-      let cx = 50;
-      for(let i=0; i<qAbs; i++){ 
-        let nx = cx + b*scale; 
-        drawCurvedVector('vectorLayerDiv', 'stageDiv', cx, nx, '#22c55e'); 
-        cx = nx; 
-        await sleep(600); 
-      }
-      await sleep(500);
+  document.getElementById('stepDiv').textContent = `① رسم پیکان عدد اول (آبی)`; 
+  await sleep(800); 
+  drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
+  await sleep(1000);
+  
+  document.getElementById('stepDiv').textContent = `② رسم پیکان عدد دوم (سبز)`; 
+  await sleep(800); 
+  drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + b*scale, '#22c55e'); 
+  await sleep(1000);
+  
+  document.getElementById('stepDiv').textContent = `③ تکرار پیکان سبز ${qAbs} بار`; 
+  let cx = 50;
+  for(let i=0; i<qAbs; i++){ 
+    let nx = cx + b*scale; 
+    drawCurvedVector('vectorLayerDiv', 'stageDiv', cx, nx, '#22c55e'); 
+    cx = nx; 
+    await sleep(600); 
+  }
+  await sleep(500);
 
-      document.getElementById('stepDiv').textContent = `④ ادغام پیکان‌ها`; 
-      clearVectors('vectorLayerDiv'); 
-      drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
-      drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#22c55e'); 
-      await sleep(1000);
-      
-      const sameDir = (a > 0 && b > 0) || (a < 0 && b < 0); 
-      let sign = '';
-      if(!sameDir){ 
-        document.getElementById('stepDiv').textContent = `⑤ جهت‌ها متفاوت است! پیکان برمی‌گردد.`; 
-        sign = '-'; 
-        clearVectors('vectorLayerDiv'); 
-        drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
-        drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 - a*scale, '#22c55e'); 
-        await sleep(1000); 
-      } else { 
-        document.getElementById('stepDiv').textContent = `⑤ جهت‌ها یکی است.`; 
-        await sleep(1000); 
-      }
-      
-      document.getElementById('exprDiv').innerHTML = `<span class="${a>0?'p':'n'}">(${a>0?'+':''}${a})</span> ÷ <span class="${b>0?'p':'n'}">(${b>0?'+':''}${b})</span> = <span class="${sameDir?'p':'n'}">${sign}${qAbs}</span>`;
-      document.getElementById('fbDiv').textContent = `✅ حاصل: ${sign}${qAbs}`; 
-      document.getElementById('fbDiv').className = 'feedback ok';
-    } 
+  const sameDir = (a > 0 && b > 0) || (a < 0 && b < 0); 
+  let sign = '';
+  
+  if(!sameDir){ 
+    document.getElementById('stepDiv').textContent = `④ جهت‌ها متفاوت است! پیکان ادغام شده برمی‌گردد.`; 
+    sign = '-'; 
+    drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 - a*scale, '#22c55e'); 
+    await sleep(1500); 
+  } else { 
+    document.getElementById('stepDiv').textContent = `④ جهت‌ها یکی است! پیکان ادغام شده در جهت آبی است.`; 
+    drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#22c55e'); 
+    await sleep(1500); 
+  }
+  
+  document.getElementById('exprDiv').innerHTML = `<span class="${a>0?'p':'n'}">(${a>0?'+':''}${a})</span> ÷ <span class="${b>0?'p':'n'}">(${b>0?'+':''}${b})</span> = <span class="${sameDir?'p':'n'}">${sign}${qAbs}</span>`;
+  document.getElementById('fbDiv').textContent = `✅ حاصل: ${sign}${qAbs}`; 
+  document.getElementById('fbDiv').className = 'feedback ok';
+}
     else {
       document.getElementById('stepDiv').textContent = `① نوشتن به صورت کسری و ضرب در معکوس`;
       const aStr = `(${a>0?'+':''}${a})`, bStr = `(${b>0?'+':''}${b})`;
