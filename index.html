@@ -22,7 +22,7 @@
     z-index:100; color: var(--gold); box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   }
 
-  /* Sections */
+  /* Sections (بخش‌های پشت سر هم) */
   .section { 
     width:100%; max-width:860px; background:var(--panel); 
     border-radius:18px; padding:16px; box-shadow:0 10px 30px #0006;
@@ -110,9 +110,9 @@
 <body>
 
 <div class="score">⭐ امتیاز: <span id="score">0</span></div>
-<h1>🦽 آموزش جامع اعداد صحیح با آدمک ویلچری (نسخه نهایی)</h1>
+<h1>🦽 آموزش جامع اعداد صحیح با آدمک ویلچری</h1>
 
-<!-- تعریف SVG به صورت مخفی اما رندرپذیر -->
+<!-- تعریف SVG برای نوک پیکان‌ها -->
 <svg width="0" height="0" style="position:absolute;">
   <defs>
     <marker id="arrow-blue" markerWidth="5" markerHeight="4" refX="4" refY="2" orient="auto"><polygon points="0 0, 5 2, 0 4" fill="#38bdf8" /></marker>
@@ -126,7 +126,7 @@
   <div class="section-title">ضرب: (+) × (+)</div>
   <div class="typing-box" id="type1"></div>
   <div class="expr" id="expr1"><span class="p">(+2)</span> × <span class="p">(+3)</span> = ?</div>
-  <div class="stage" id="stage1"><div class="axis"></div><div class="origin"></div><div class="human" id="human1"></div></div>
+  <div class="stage" id="stage1"><div class="axis"></div><div class="origin"></div><div class="human" id="human1"></div><svg class="vector-layer" id="vectorLayer1"></svg></div>
   <div class="step-box" id="step1">برای دیدن حرکت، دکمه «نمایش» را بزن</div>
   <div class="controls"><button class="go" id="play1" onclick="runMulDemo(1)">▶ نمایش حرکت</button><button onclick="resetMul(1)">↺ ریست</button></div>
   <div class="feedback" id="fb1"></div>
@@ -137,7 +137,7 @@
   <div class="section-title">ضرب: (+) × (-)</div>
   <div class="typing-box" id="type2"></div>
   <div class="expr" id="expr2"><span class="p">(+2)</span> × <span class="n">(-3)</span> = ?</div>
-  <div class="stage" id="stage2"><div class="axis"></div><div class="origin"></div><div class="human" id="human2"></div></div>
+  <div class="stage" id="stage2"><div class="axis"></div><div class="origin"></div><div class="human" id="human2"></div><svg class="vector-layer" id="vectorLayer2"></svg></div>
   <div class="step-box" id="step2">برای دیدن حرکت، دکمه «نمایش» را بزن</div>
   <div class="controls"><button class="go" id="play2" onclick="runMulDemo(2)">▶ نمایش حرکت</button><button onclick="resetMul(2)">↺ ریست</button></div>
   <div class="feedback" id="fb2"></div>
@@ -148,7 +148,7 @@
   <div class="section-title">ضرب: (-) × (+)</div>
   <div class="typing-box" id="type3"></div>
   <div class="expr" id="expr3"><span class="n">(-2)</span> × <span class="p">(+3)</span> = ?</div>
-  <div class="stage" id="stage3"><div class="axis"></div><div class="origin"></div><div class="human" id="human3"></div></div>
+  <div class="stage" id="stage3"><div class="axis"></div><div class="origin"></div><div class="human" id="human3"></div><svg class="vector-layer" id="vectorLayer3"></svg></div>
   <div class="step-box" id="step3">برای دیدن حرکت، دکمه «نمایش» را بزن</div>
   <div class="controls"><button class="go" id="play3" onclick="runMulDemo(3)">▶ نمایش حرکت</button><button onclick="resetMul(3)">↺ ریست</button></div>
   <div class="feedback" id="fb3"></div>
@@ -159,7 +159,7 @@
   <div class="section-title">ضرب: (-) × (-)</div>
   <div class="typing-box" id="type4"></div>
   <div class="expr" id="expr4"><span class="n">(-2)</span> × <span class="n">(-3)</span> = ?</div>
-  <div class="stage" id="stage4"><div class="axis"></div><div class="origin"></div><div class="human" id="human4"></div></div>
+  <div class="stage" id="stage4"><div class="axis"></div><div class="origin"></div><div class="human" id="human4"></div><svg class="vector-layer" id="vectorLayer4"></svg></div>
   <div class="step-box" id="step4">برای دیدن حرکت، دکمه «نمایش» را بزن</div>
   <div class="controls"><button class="go" id="play4" onclick="runMulDemo(4)">▶ نمایش حرکت</button><button onclick="resetMul(4)">↺ ریست</button></div>
   <div class="feedback" id="fb4"></div>
@@ -171,7 +171,7 @@
   <div class="section-title">🎯 تمرین حدس حرکت (ضرب)</div>
   <div class="typing-box" id="type5"></div>
   <div class="expr">کدام ضرب اجرا می‌شود؟</div>
-  <div class="stage" id="stage5"><div class="axis"></div><div class="origin"></div><div class="human" id="human5"></div></div>
+  <div class="stage" id="stage5"><div class="axis"></div><div class="origin"></div><div class="human" id="human5"></div><svg class="vector-layer" id="vectorLayer5"></svg></div>
   <div class="step-box" id="step5" style="color:var(--gold);">در حال آماده‌سازی...</div>
   <div class="guess-options" id="guessOptions"></div>
   <div class="quiz-fb" id="guessFb"></div>
@@ -217,13 +217,12 @@
    متغیرهای عمومی و توابع کمکی
    ===================================================== */
 let score = 0;
-const scale = 6.5; // ۱ واحد = ۶.۵ درصد
+const scale = 6.5; 
 const colors = ['#38bdf8', '#22c55e', '#fbbf24', '#f472b6'];
 let running = {1:false, 2:false, 3:false, 4:false, 5:false, 6:false, 7:false};
 
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
-// افکت تایپ کلمه به کلمه
 function typeText(elementId, text) {
   const box = document.getElementById(elementId);
   if(!box) return;
@@ -236,7 +235,6 @@ function typeText(elementId, text) {
   });
 }
 
-// رسم آدمک ویلچری
 function wheelchairSVG(faceDir){
   const flip = faceDir === 1 ? 1 : -1;
   return `<svg viewBox="0 0 130 150" xmlns="http://www.w3.org/2000/svg"><g transform="translate(65,0) scale(${flip},1) translate(-65,0)"><circle cx="65" cy="110" r="30" fill="none" stroke="#64748b" stroke-width="4"/><circle cx="65" cy="110" r="4" fill="#94a3b8"/><line x1="65" y1="80" x2="65" y2="140" stroke="#94a3b8" stroke-width="1.5"/><line x1="35" y1="110" x2="95" y2="110" stroke="#94a3b8" stroke-width="1.5"/><line x1="44" y1="89" x2="86" y2="131" stroke="#94a3b8" stroke-width="1.5"/><line x1="86" y1="89" x2="44" y2="131" stroke="#94a3b8" stroke-width="1.5"/><circle cx="105" cy="128" r="10" fill="none" stroke="#64748b" stroke-width="3"/><circle cx="105" cy="128" r="2" fill="#94a3b8"/><path d="M40 70 L90 70 L92 95 L38 95 Z" fill="#334155" stroke="#1e293b" stroke-width="2"/><path d="M40 40 L40 72" stroke="#334155" stroke-width="6" stroke-linecap="round"/><path d="M38 55 L30 55" stroke="#475569" stroke-width="4" stroke-linecap="round"/><line x1="90" y1="95" x2="105" y2="120" stroke="#334155" stroke-width="3"/><ellipse cx="60" cy="24" rx="15" ry="17" fill="#fcd9b6" stroke="#8b5e3c" stroke-width="1.5"/><path d="M45 14 Q48 2 62 3 Q74 5 74 18 Q75 30 72 40 L66 40 Q70 28 68 18 Q60 12 50 16 Q47 22 47 32 L43 32 Q43 18 45 14 Z" fill="#5b2c11"/><path d="M72 22 L78 27 L72 30" fill="#fcd9b6" stroke="#8b5e3c" stroke-width="1.2" stroke-linejoin="round"/><circle cx="66" cy="22" r="2" fill="#1e293b"/><ellipse cx="54" cy="26" rx="3" ry="4" fill="#f0c19a" stroke="#8b5e3c" stroke-width="1"/><rect x="55" y="40" width="8" height="6" fill="#fcd9b6" stroke="#8b5e3c" stroke-width="1"/><path d="M44 46 Q60 44 72 46 L72 72 Q60 76 44 72 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.5"/><path d="M48 72 L78 72 L84 90 L50 90 Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.5"/><ellipse cx="82" cy="94" rx="8" ry="4" fill="#111827"/></g></svg>`;
@@ -250,7 +248,6 @@ function placeHuman(id, percent, animate=true){
   if(!animate){ void h.offsetWidth; h.style.transition = ''; }
 }
 
-// رسم محور و تیک‌ها
 function renderTicks(stageId, divisor = 1) {
   const stage = document.getElementById(stageId);
   stage.querySelectorAll('.tick').forEach(t => t.remove());
@@ -275,7 +272,6 @@ function renderTicks(stageId, divisor = 1) {
   }
 }
 
-// رسم ردپا
 function drawFootprint(stageId, percent, color) {
   const stage = document.getElementById(stageId);
   const fp = document.createElement('div');
@@ -286,25 +282,38 @@ function drawFootprint(stageId, percent, color) {
   stage.appendChild(fp);
 }
 
-// رسم بردار (اصلاح شده برای موبایل)
-function drawVector(layerId, stageId, x1Percent, x2Percent, color, isSmall=false) {
+/* =====================================================
+   رسم بردار خمیده
+   ===================================================== */
+function drawCurvedVector(layerId, stageId, x1Percent, x2Percent, color) {
   const stage = document.getElementById(stageId);
   const layer = document.getElementById(layerId);
   if(!stage || !layer) return;
   
   const w = stage.clientWidth || stage.offsetWidth;
   const h = stage.clientHeight || stage.offsetHeight;
-  const y = h * 0.70;
+  const y = h * 0.70; 
 
-  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  line.setAttribute('x1', w * (x1Percent / 100));
-  line.setAttribute('y1', y);
-  line.setAttribute('x2', w * (x2Percent / 100));
-  line.setAttribute('y2', y);
-  line.setAttribute('stroke', color);
-  line.setAttribute('stroke-width', isSmall ? '2' : '4');
-  line.setAttribute('marker-end', color === '#38bdf8' ? 'url(#arrow-blue)' : (color === '#22c55e' ? 'url(#arrow-green)' : 'url(#arrow-gold)'));
-  layer.appendChild(line);
+  const x1 = w * (x1Percent / 100);
+  const x2 = w * (x2Percent / 100);
+  
+  if (x1 === x2) return;
+
+  const cx = (x1 + x2) / 2;
+  const cy = y + 45; 
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', `M ${x1} ${y} Q ${cx} ${cy} ${x2} ${y}`);
+  path.setAttribute('stroke', color);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke-width', '3');
+  
+  let marker = 'url(#arrow-gold)';
+  if(color === '#38bdf8') marker = 'url(#arrow-blue)';
+  else if(color === '#22c55e') marker = 'url(#arrow-green)';
+  
+  path.setAttribute('marker-end', marker);
+  layer.appendChild(path);
 }
 
 function clearVectors(layerId) {
@@ -325,6 +334,7 @@ async function runMulDemo(n){
     const h = document.getElementById('human'+n), stage = document.getElementById('stage'+n);
     fb.textContent = ''; fb.className = 'feedback'; step.textContent = ''; h.classList.remove('shake');
     stage.querySelectorAll('.footprint').forEach(el => el.remove());
+    clearVectors('vectorLayer'+n);
 
     const data = { 1:{a:2, aSign:1, b:3, bSign:1, result:6}, 2:{a:2, aSign:1, b:3, bSign:-1, result:-6}, 3:{a:2, aSign:-1, b:3, bSign:1, result:-6}, 4:{a:2, aSign:-1, b:3, bSign:-1, result:6} }[n];
     const face = data.aSign > 0 ? 'right' : 'left';
@@ -341,6 +351,8 @@ async function runMulDemo(n){
     let currentPercent = 50;
     for(let g = 1; g <= data.a; g++){
       const color = colors[(g-1) % colors.length];
+      const groupStartPercent = currentPercent; 
+
       step.textContent = `دسته ${g} از ${data.a}: ${data.b} حرکت به ${dir > 0 ? 'راست' : 'چپ'}`;
       for(let s = 0; s < data.b; s++){
         currentPercent += dir * scale;
@@ -348,6 +360,8 @@ async function runMulDemo(n){
         drawFootprint('stage'+n, currentPercent, color);
         await sleep(600);
       }
+      
+      drawCurvedVector('vectorLayer'+n, 'stage'+n, groupStartPercent, currentPercent, color);
       await sleep(400);
     }
     
@@ -365,6 +379,7 @@ function resetMul(n){
   document.getElementById('human'+n).innerHTML = wheelchairSVG(1);
   placeHuman('human'+n, 50, false);
   document.getElementById('stage'+n).querySelectorAll('.footprint').forEach(el => el.remove());
+  clearVectors('vectorLayer'+n);
   document.getElementById('fb'+n).textContent = ''; document.getElementById('fb'+n).className = 'feedback';
   document.getElementById('step'+n).textContent = 'برای دیدن حرکت، دکمه «نمایش» را بزن';
   document.getElementById('human'+n).classList.remove('shake');
@@ -427,7 +442,9 @@ async function playGuessGame(){
   if(running[5]) return; running[5] = true;
   try {
     const stage = document.getElementById('stage5'), human = document.getElementById('human5'), stepBox = document.getElementById('step5'), optionsDiv = document.getElementById('guessOptions'), fb = document.getElementById('guessFb');
-    stage.querySelectorAll('.footprint').forEach(el => el.remove()); optionsDiv.innerHTML = ''; fb.textContent = ''; fb.className = 'quiz-fb';
+    stage.querySelectorAll('.footprint').forEach(el => el.remove()); 
+    clearVectors('vectorLayer5');
+    optionsDiv.innerHTML = ''; fb.textContent = ''; fb.className = 'quiz-fb';
     stepBox.textContent = 'آماده باش...';
     human.style.transition = 'none'; human.style.left = '50%'; human.innerHTML = wheelchairSVG(1); void human.offsetWidth; human.style.transition = '';
     await sleep(1000);
@@ -440,11 +457,13 @@ async function playGuessGame(){
     let currentPercent = 50;
     for(let g = 1; g <= data.a; g++){
       const color = colors[(g-1) % colors.length];
+      const groupStart = currentPercent;
       for(let s = 0; s < data.b; s++){
         currentPercent += dir * scale; human.style.left = currentPercent + '%';
         const fp = document.createElement('div'); fp.className = 'footprint show'; fp.style.left = currentPercent + '%'; fp.style.backgroundColor = color; fp.style.boxShadow = `0 0 8px ${color}`; stage.appendChild(fp);
         await sleep(500);
       }
+      drawCurvedVector('vectorLayer5', 'stage5', groupStart, currentPercent, color);
       await sleep(300);
     }
 
@@ -488,16 +507,22 @@ async function runAddDemo(){
     document.getElementById('humanAdd').innerHTML = wheelchairSVG(dirA);
     document.getElementById('stepAdd').textContent = `① حرکت اول: ${a} (به ${dirA===1?'راست':'چپ'})`; await sleep(1000);
     
+    const start1 = currentX;
     for(let i=0; i<Math.abs(a); i++){ currentX += dirA * scale; placeHuman('humanAdd', currentX); drawFootprint('stageAdd', currentX, '#38bdf8'); await sleep(500); }
+    drawCurvedVector('vectorLayerAdd', 'stageAdd', start1, currentX, '#38bdf8'); 
     await sleep(500);
 
     document.getElementById('humanAdd').innerHTML = wheelchairSVG(dirB);
     document.getElementById('stepAdd').textContent = `② حرکت دوم: ${b} (به ${dirB===1?'راست':'چپ'})`; await sleep(1000);
     
+    const start2 = currentX;
     for(let i=0; i<Math.abs(b); i++){ currentX += dirB * scale; placeHuman('humanAdd', currentX); drawFootprint('stageAdd', currentX, '#22c55e'); await sleep(500); }
+    drawCurvedVector('vectorLayerAdd', 'stageAdd', start2, currentX, '#22c55e'); 
     await sleep(500);
 
-    document.getElementById('stepAdd').textContent = `③ رسم بردار از صفر تا حاصل جمع`; drawVector('vectorLayerAdd', 'stageAdd', 50, currentX, '#fbbf24'); await sleep(1000);
+    document.getElementById('stepAdd').textContent = `③ رسم بردار نهایی از صفر تا حاصل جمع`; 
+    drawCurvedVector('vectorLayerAdd', 'stageAdd', 50, currentX, '#fbbf24'); 
+    await sleep(1000);
 
     document.getElementById('stepAdd').textContent = `نتیجه: ${res>0?'+':''}${res}`;
     document.getElementById('fbAdd').textContent = `✅ حاصل جمع: ${res>0?'+':''}${res}`; document.getElementById('fbAdd').className = 'feedback ok';
@@ -549,7 +574,7 @@ function ansAddDir(idx, c){ const d = quizAddState.data; if(c === (idx===0?(d.a>
 function ansAddCount(idx){ const d = quizAddState.data; if(parseInt(document.getElementById('qinAdd').value) === (idx===0?Math.abs(d.a):Math.abs(d.b))){ document.getElementById('qfbAdd').textContent='✅'; document.getElementById('qfbAdd').className='quiz-fb ok'; quizAddState.step++; setTimeout(renderAddQuiz, 700); } else { document.getElementById('qfbAdd').textContent='❌'; document.getElementById('qfbAdd').className='quiz-fb bad'; } }
 
 /* =====================================================
-   تقسیم (بخش ۷) - نسخه پایدار
+   تقسیم (بخش ۷)
    ===================================================== */
 let currentDiv = { a:6, b:2 };
 function changeEqDiv(val){
@@ -574,19 +599,19 @@ async function runDivDemo(){
     if(isExact){
       document.getElementById('stepDiv').textContent = `① رسم پیکان عدد اول (آبی)`; 
       await sleep(800); 
-      drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
+      drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
       await sleep(1000);
       
       document.getElementById('stepDiv').textContent = `② رسم پیکان عدد دوم (سبز)`; 
       await sleep(800); 
-      drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + b*scale, '#22c55e'); 
+      drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + b*scale, '#22c55e'); 
       await sleep(1000);
       
       document.getElementById('stepDiv').textContent = `③ تکرار پیکان سبز ${qAbs} بار`; 
       let cx = 50;
       for(let i=0; i<qAbs; i++){ 
         let nx = cx + b*scale; 
-        drawVector('vectorLayerDiv', 'stageDiv', cx, nx, '#22c55e'); 
+        drawCurvedVector('vectorLayerDiv', 'stageDiv', cx, nx, '#22c55e'); 
         cx = nx; 
         await sleep(600); 
       }
@@ -594,8 +619,8 @@ async function runDivDemo(){
 
       document.getElementById('stepDiv').textContent = `④ ادغام پیکان‌ها`; 
       clearVectors('vectorLayerDiv'); 
-      drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
-      drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#22c55e'); 
+      drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
+      drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#22c55e'); 
       await sleep(1000);
       
       const sameDir = (a > 0 && b > 0) || (a < 0 && b < 0); 
@@ -604,8 +629,8 @@ async function runDivDemo(){
         document.getElementById('stepDiv').textContent = `⑤ جهت‌ها متفاوت است! پیکان برمی‌گردد.`; 
         sign = '-'; 
         clearVectors('vectorLayerDiv'); 
-        drawVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
-        drawVector('vectorLayerDiv', 'stageDiv', 50, 50 - a*scale, '#22c55e'); 
+        drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 + a*scale, '#38bdf8'); 
+        drawCurvedVector('vectorLayerDiv', 'stageDiv', 50, 50 - a*scale, '#22c55e'); 
         await sleep(1000); 
       } else { 
         document.getElementById('stepDiv').textContent = `⑤ جهت‌ها یکی است.`; 
@@ -625,29 +650,28 @@ async function runDivDemo(){
       document.getElementById('exprDiv').innerHTML = `<span class="${a>0?'p':'n'}">${aStr}</span> × <span class="fraction"><span>1</span><span>${bStr}</span></span>`; 
       await sleep(1500);
 
-      document.getElementById('stepDiv').textContent = `② رسم پیکان‌های کوچک`;
+      document.getElementById('stepDiv').textContent = `② رسم پیکان‌های کوچک به تعداد عدد اول`;
       const smallLen = (1 / Math.abs(b)) * scale; 
       const finalDir = ((a > 0 && b > 0) || (a < 0 && b < 0)) ? 1 : -1;
       document.getElementById('humanDiv').innerHTML = wheelchairSVG(finalDir);
       let cx = 50;
       for(let i=0; i<Math.abs(a); i++){ 
         let nx = cx + (finalDir * smallLen); 
-        drawVector('vectorLayerDiv', 'stageDiv', cx, nx, '#22c55e', true); 
+        drawCurvedVector('vectorLayerDiv', 'stageDiv', cx, nx, '#22c55e'); 
         placeHuman('humanDiv', nx); 
         cx = nx; 
         await sleep(500); 
       }
       await sleep(500);
 
-      document.getElementById('stepDiv').textContent = `③ ادغام`; 
-      clearVectors('vectorLayerDiv'); 
-      drawVector('vectorLayerDiv', 'stageDiv', 50, cx, '#22c55e'); 
-      await sleep(1500);
+      document.getElementById('stepDiv').textContent = `③ بررسی تعداد پیکان‌ها و جهت نهایی`; 
+      // پیکان‌ها پاک نمی‌شوند تا کاربر تعدادشان را ببیند
+      await sleep(2000);
       
       const finalSign = finalDir === 1 ? '' : '-'; 
       const absRes = Math.abs(a / b);
       document.getElementById('exprDiv').innerHTML = `<span class="${a>0?'p':'n'}">${aStr}</span> ÷ <span class="${b>0?'p':'n'}">${bStr}</span> = <span class="${finalDir===1?'p':'n'}">${finalSign}${absRes}</span>`;
-      document.getElementById('stepDiv').textContent = `④ نتیجه: ${finalSign}${absRes}`;
+      document.getElementById('stepDiv').textContent = `④ نتیجه: ${finalSign}${absRes} (تعداد ${Math.abs(a)} پیکان سبز دیده می‌شود)`;
       document.getElementById('fbDiv').textContent = `✅ حاصل: ${finalSign}${absRes}`; 
       document.getElementById('fbDiv').className = 'feedback ok';
     }
@@ -716,7 +740,7 @@ function ansDivResult(){
 }
 
 /* =====================================================
-   مقداردهی اولیه در هنگام لود صفحه
+   مقداردهی اولیه
    ===================================================== */
 window.onload = function() {
   typeText('type1', "در ضرب اعداد صحیح، علامت عدد اول جهت صورت را تعیین می‌کند و علامت عدد دوم جهت حرکت به جلو یا عقب را. سپس به تعداد عدد اول، دسته‌های حرکت انجام می‌شود.");
@@ -725,7 +749,7 @@ window.onload = function() {
   typeText('type4', "در ضرب اعداد صحیح، علامت عدد اول جهت صورت را تعیین می‌کند و علامت عدد دوم جهت حرکت به جلو یا عقب را. سپس به تعداد عدد اول، دسته‌های حرکت انجام می‌شود.");
   typeText('type5', "به طرز حرکت خوب دقت کن. حالا تو تمرین کن و این حرکت که می‌بینی را حدس بزن.");
   typeText('type6', "در جمع اعداد صحیح باید در آخر، هر عدد با یک علامت باشد و علامت + بین اعداد یعنی، پشت سر هم برای تفریق هم کافیست عبارت به جمع تبدیل شود.");
-  typeText('type7', "در تقسیم، اگر عدد اول بر عدد دوم بخش‌پذیر باشد، پیکان عدد اول (آبی) و پیکان عدد دوم (سبز) را رسم می‌کنیم. اگر بخش‌پذیر نباشد، تقسیم را به ضرب در معکوس تبدیل می‌کنیم.");
+  typeText('type7', "در تقسیم، اگر عدد اول بر عدد دوم بخش‌پذیر باشد، پیکان عدد اول (آبی) و پیکان عدد دوم (سبز) را رسم می‌کنیم. اگر بخش‌پذیر نباشد، تقسیم را به ضرب در معکوس تبدیل می‌کنیم و تعداد پیکان‌های سبز را نگه می‌داریم تا حاصل دیده شود.");
 
   [1,2,3,4].forEach(n => {
     document.getElementById('human'+n).innerHTML = wheelchairSVG(1);
